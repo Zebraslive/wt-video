@@ -2,15 +2,11 @@ import { useRef, useState } from "react";
 import videojs, { VideoJsPlayer } from "video.js";
 import { VideoJS } from "./components/VideoJS";
 import WebTorrent from "webtorrent";
-import { testId } from "./constants/webtorrentId";
 import { parseStatus } from "./utils/parseStatus";
-import { Status } from "./components/Status";
-import { StatusInterface } from "./types/Status";
 
 function App() {
-  const [torrentId, setTorrentId] = useState(testId);
-  const [status, setStatus] = useState<StatusInterface | null>(null);
-  const [statusCode, setStatusCode] = useState("ready");
+  const magnetUrl = new URLSearchParams(window.location.search).get('magnet');
+  const [torrentId, setTorrentId] = useState(magnetUrl ? `magnet=${magnetUrl}` : "");
   const playerRef = useRef<null | VideoJsPlayer>(null);
 
   const videoJsOptions = {
@@ -35,38 +31,19 @@ function App() {
   return (
     <>
       <VideoJS options={videoJsOptions} onReady={handlePlayerReady} />
-      <Status statusCode={statusCode} status={status} />
-      <textarea
-        name="torrentId"
-        id="torrentId"
-        cols={50}
-        rows={10}
-        placeholder="Enter the webtorrent magnet url"
-        value={torrentId}
-        onChange={(e) => {
-          setTorrentId(e.target.value);
-        }}
-      />
       <div>
         <button
           style={{ width: "100px", height: "50px" }}
           onClick={() => {
-            setStatusCode("wait");
-
             const client = new WebTorrent();
 
             client.add(torrentId, (torrent) => {
-              setStatusCode("process");
-
               const file = torrent.files.find((file) => {
                 return file.name.endsWith(".mp4");
               });
 
-              setInterval(() => setStatus(parseStatus(torrent)), 300);
               file?.renderTo("video", {}, () => {});
-              torrent.on("done", () => {
-                setStatusCode("ready");
-              });
+              torrent.on("done", () => {});
             });
           }}
         >
