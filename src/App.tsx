@@ -4,8 +4,8 @@ import { VideoJS } from "./components/VideoJS";
 import WebTorrent from "webtorrent";
 
 function App() {
-  const magnetUrl = new URLSearchParams(window.location.search).get('magnet');
-  const [torrentId, setTorrentId] = useState(magnetUrl ? `${magnetUrl}` : "");
+  const magnetUrl = window.location.href.split("?magnet=")[1];
+  const [torrentId, setTorrentId] = useState(magnetUrl ? `magnet:${magnetUrl}` : "");
   const playerRef = useRef<null | VideoJsPlayer>(null);
 
   const videoJsOptions = {
